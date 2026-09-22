@@ -1,0 +1,13 @@
+id,outlet_id,name,spend,attributed_revenue,gross_margin,impressions,clicks,conversions,status
+1,1,Lunch special,10000.0,55000.0,0.4,22000,1200,160,active
+2,1,Local discovery,10000.0,55000.0,0.4,22000,1200,160,active
+3,2,Lunch special,10000.0,18000.0,0.4,22000,1200,160,active
+4,2,Local discovery,10000.0,18000.0,0.4,22000,1200,160,active
+5,3,Lunch special,10000.0,55000.0,0.4,22000,1200,160,active
+6,3,Local discovery,10000.0,55000.0,0.4,22000,1200,160,active
+7,4,Lunch special,10000.0,55000.0,0.4,22000,1200,160,active
+8,4,Local discovery,10000.0,55000.0,0.4,22000,1200,160,active
+9,5,Lunch special,10000.0,18000.0,0.4,22000,1200,160,active
+10,5,Local discovery,10000.0,18000.0,0.4,22000,1200,160,active
+11,6,Lunch special,10000.0,55000.0,0.4,22000,1200,160,active
+12,6,Local discovery,10000.0,55000.0,0.4,22000,1200,160,active
