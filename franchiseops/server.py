@@ -1,5 +1,5 @@
 """Small dependency-free WSGI API. Use a WSGI server behind HTTPS for deployment."""
-import csv, io, json, os, secrets, time, threading, sqlite3, hashlib, hmac
+import csv, io, json, sqlite3
 from datetime import date
 from pathlib import Path
 from urllib.parse import parse_qs
@@ -8,14 +8,6 @@ from .agents import analyze, run_agents
 from .imports import SCHEMAS, import_csv
 from .briefing import brief
 STATIC=Path(__file__).parent/'static'
-SESSIONS={}; ATTEMPTS={}; LOCK=threading.Lock()
-
-def password_ok(value, stored):
-    if stored.startswith('pbkdf2$'):
-        _,salt,digest=stored.split('$')
-        return hmac.compare_digest(hashlib.pbkdf2_hmac('sha256',value.encode(),bytes.fromhex(salt),260000).hex(),digest)
-    return hmac.compare_digest(value,stored)
-
 def application(env,start_response):
     def respond(payload,status='200 OK',ctype='application/json',extra=()):
         data=payload if isinstance(payload,bytes) else json.dumps(payload,allow_nan=False).encode()
@@ -31,28 +23,7 @@ def application(env,start_response):
         if size>5_000_000: return respond({'error':'Maximum request size is 5 MB'},'413 Payload Too Large')
         body=json.loads(env['wsgi.input'].read(size)) if size else {}
         if not isinstance(body,dict): raise ValueError('JSON body must be an object')
-        if path=='/api/login' and method=='POST':
-            ip=env.get('REMOTE_ADDR','local'); t=time.time()
-            with LOCK:
-                recent=[x for x in ATTEMPTS.get(ip,[]) if t-x<300]; ATTEMPTS[ip]=recent
-                if len(recent)>=10: return respond({'error':'Too many attempts. Try again in five minutes.'},'429 Too Many Requests')
-                username=str(body.get('username','')); password=str(body.get('password',''))
-                role=None
-                if username==os.getenv('ADMIN_USER','admin') and password_ok(password,os.getenv('ADMIN_PASSWORD','demo-change-me')): role='admin'
-                elif os.getenv('VIEWER_PASSWORD') and username==os.getenv('VIEWER_USER','viewer') and password_ok(password,os.environ['VIEWER_PASSWORD']): role='viewer'
-                if not role:
-                    recent.append(t); return respond({'error':'Invalid credentials'},'401 Unauthorized')
-                for token,session in list(SESSIONS.items()):
-                    if session['expires']<t: SESSIONS.pop(token,None)
-                token=secrets.token_urlsafe(32); SESSIONS[token]={'role':role,'user':username,'expires':t+8*3600}
-            return respond({'token':token,'role':role,'username':username,'demo':not bool(os.getenv('ADMIN_PASSWORD'))})
-        token=env.get('HTTP_AUTHORIZATION','').removeprefix('Bearer ')
-        session=SESSIONS.get(token)
-        if not session or session['expires']<time.time(): return respond({'error':'Please sign in'},'401 Unauthorized')
-        if path=='/api/logout' and method=='POST':
-            SESSIONS.pop(token,None); return respond({'ok':True})
         if method not in ('GET','POST','PATCH'): return respond({'error':'Method not allowed'},'405 Method Not Allowed')
-        if method!='GET' and session['role']!='admin': return respond({'error':'Administrator access required'},'403 Forbidden')
         query={k:v[0] for k,v in parse_qs(env.get('QUERY_STRING','')).items()}
         db=connect()
         try:
@@ -85,7 +56,7 @@ def application(env,start_response):
                 with db:
                     cur=db.execute('UPDATE alerts SET status=?,owner=?,notes=?,due_date=?,resolved_at=? WHERE id=?',(status,owner,notes,due,now() if status=='resolved' else None,aid))
                     if not cur.rowcount: return respond({'error':'Action not found'},'404 Not Found')
-                    log(db,'action.update',f"{session['user']}: action {aid} -> {status}")
+                    log(db,'action.update',f"Public action {aid} -> {status}")
                 return respond({'ok':True})
             if path=='/api/export' and method=='GET':
                 dataset=query.get('dataset','sales')

@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart TD
-    UI[Browser dashboards] --> API[Authenticated WSGI API]
+    UI[Browser dashboards] --> API[Open WSGI API]
     CSV[CSV datasets] --> Validation[Schema and transaction validation]
     Validation --> DB[(SQLite)]
     API --> DB
@@ -49,4 +49,4 @@ Inventory = 100 × (1 − shortage item fraction). Staff = mean capped attendanc
 
 ## Deployment boundary
 
-Single-process WSGI with threaded serving; SQLite serializes writes. Tokens and login throttling are process local. Use exactly one web worker until sessions and rate limits move to shared storage. Multiple franchises are data-supported, but access is organization-wide rather than tenant-scoped. No cross-tenant authorization claim is made.
+Single-process WSGI with threaded serving; SQLite serializes writes. The API has no user identity or permissions. All reachable clients have full read and write access. Multiple franchises are data-supported but access is not tenant-scoped. Use one web worker for this small SQLite installation.

@@ -4,7 +4,7 @@ Local execution is verified. Docker and remote infrastructure have not been exer
 
 ## Small Linux installation
 
-Use Python 3.10+ in a virtual environment. Set a strong `ADMIN_PASSWORD` through your service manager and an absolute writable `FRANCHISEOPS_DB`. Initialize the database before starting WSGI:
+Use Python 3.10+ in a virtual environment. Set an absolute writable `FRANCHISEOPS_DB` if you want to override the local database path. Initialize the database before starting WSGI:
 
 ```bash
 python -m pip install -r requirements-deploy.txt
@@ -13,13 +13,11 @@ python run.py --run-once
 gunicorn --bind 127.0.0.1:8000 --workers 1 --threads 4 --timeout 90 wsgi:application
 ```
 
-The default local launcher uses Python's development WSGI server. Use the supplied WSGI entry point behind your HTTPS reverse proxy for deployment. Keep one Gunicorn worker: session tokens and throttles are in-process. Run as an unprivileged OS account, restrict database permissions, and manage restarts/logs with your platform's service manager.
+The default local launcher uses Python's development WSGI server. Use the supplied WSGI entry point behind your HTTPS reverse proxy for deployment. Keep one Gunicorn worker for a simple SQLite deployment. Run as an unprivileged OS account, restrict database permissions, and manage restarts/logs with your platform's service manager.
 
-The optional LLM timeout is 45 seconds; the WSGI timeout is set higher. Rate limit authenticated expensive routes at the reverse proxy for internet exposure. `/healthz` is liveness only, not a full database/readiness test. Shared NAT/proxy addresses share the application login rate limit unless you implement trusted proxy handling.
+The optional LLM timeout is 45 seconds; the WSGI timeout is set higher. Rate limit expensive public routes at the reverse proxy for internet exposure. `/healthz` is liveness only, not a full database/readiness test.
 
 ## Docker
-
-Set `ADMIN_PASSWORD` in your shell, then:
 
 ```bash
 docker compose up --build -d
@@ -42,4 +40,14 @@ To restore, stop web and worker processes, preserve the existing database and WA
 
 ## Before real operational use
 
-Configure HTTPS, secrets, a durable volume, backups, monitoring and appropriate identity controls. Replace synthetic data and validate metric assumptions with the operations team. Add per-franchise authorization if independent organizations share an instance. Move to a managed SQL database and shared sessions for scale. Validate SMTP/SMS/push provider integration in a test account before enabling dispatch. No cloud resources have been provisioned as part of this deliverable.
+Configure HTTPS, a durable volume, backups, monitoring and upstream access restrictions if the data must be private. Replace synthetic data and validate metric assumptions with the operations team. Add per-franchise authorization before sharing independent organizations' data. Move to a managed SQL database for scale. Validate SMTP/SMS/push provider integration in a test account before enabling dispatch. No cloud resources have been provisioned as part of this deliverable.
+
+## Render live demo
+
+Upload the contents of this project folder to a GitHub repository, then create a Render Python Web Service:
+
+- Build command: `pip install -r requirements-deploy.txt`
+- Start command: `python run.py --run-once && gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 90 wsgi:application`
+- Health check: `/healthz`
+
+The dashboard opens directly from the generated public URL. No password environment variable is needed. On Render Free, local SQLite changes disappear on sleep, restart or redeploy. Use synthetic data for the public demo. Paid persistent disk: mount `/var/data` and set `FRANCHISEOPS_DB=/var/data/franchiseops.db`.

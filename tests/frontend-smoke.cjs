@@ -20,7 +20,7 @@ function element(id){if(!elements.has(id))elements.set(id,{value:id==='dataset'?
 const context=vm.createContext({document:{getElementById:element,querySelectorAll:()=>[],createElement:()=>element('download')},sessionStorage:{getItem:()=>null,removeItem(){},setItem(){}},setInterval(){},URL,URLSearchParams,Blob,console});
 vm.runInContext(fs.readFileSync(path.join(root,'franchiseops/static/app.js'),'utf8'),context);
 context.fixture=fixture;
-vm.runInContext(`auth={role:'admin',username:'admin'};data=fixture;`,context);
+vm.runInContext(`data=fixture;`,context);
 for(const name of ['executive','performance','inventory','staff','marketing','audit','actions','data','methodology']){
  vm.runInContext(`page='${name}';render();`,context);
  if(element('content').innerHTML.length<100)throw Error('Empty render: '+name);

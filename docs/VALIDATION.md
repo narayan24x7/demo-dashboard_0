@@ -6,10 +6,10 @@
 - All eight dataset types export and reimport correctly.
 - Invalid data and missing foreign keys roll back the entire CSV import.
 - Critical audit overrides, missing data behavior, forecast quantities, marketing ROI, escalation and alert identity tested.
-- Authentication, viewer restrictions, logout, login throttling, closure evidence and spreadsheet formula escaping tested.
+- Open read/write endpoints, removed login routes, closure evidence and spreadsheet formula escaping tested.
 - Optional LLM success parsing and failure fallback tested with mocked network responses. No model was actually loaded.
 - Node syntax check and dependency-free smoke rendering of all nine dashboard/workflow pages; HTML escaping checked. This uses a minimal DOM stand-in, not a browser.
-- Real local HTTP smoke test launches an isolated server, logs in, requests dashboards and filtered data, runs agents, generates the offline briefing and requests HTML/CSS/JavaScript.
+- Real local HTTP smoke test launches an isolated server, requests dashboards and filtered data, runs agents, generates the offline briefing and requests HTML/CSS/JavaScript.
 
 ## Not verified in this environment
 

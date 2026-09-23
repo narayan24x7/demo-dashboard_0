@@ -15,7 +15,7 @@ python run.py
 ```
 
 4. Open **http://127.0.0.1:8000**.
-5. Sign in with **admin / demo-change-me**.
+5. The dashboard opens immediately. No account or password is needed.
 
 You can also double-click `start.bat`. On macOS/Linux, use `python3 run.py` or `./start.sh`. Keep the terminal open while using the app. Press Ctrl+C to stop.
 
@@ -94,20 +94,11 @@ python worker.py --interval 300
 
 This runs agents every five minutes. Add `--dispatch` only when you want actual external delivery. Run only one dispatcher instance to avoid concurrent deliveries. Alternatively schedule `python run.py --run-once` with Windows Task Scheduler or cron. This worker is provided as code, not installed as a service on your computer.
 
-## Accounts
+## Open access
 
-The local demo administrator can import data, run agents and edit actions. A viewer can read dashboards and export data.
+The dashboard and API have no login or authorization. Anyone who can reach the deployed link can see reports and staff records, download data, import CSVs, run agents, and change actions. For a public portfolio demo, use synthetic data only. If you need private business data, configure access restrictions outside this app before sharing its link.
 
-```powershell
-$env:ADMIN_PASSWORD="choose-a-strong-unique-password"
-$env:VIEWER_USER="viewer"
-$env:VIEWER_PASSWORD="choose-another-password"
-python run.py
-```
-
-The `.env.example` file documents variables; Python does **not** automatically load it. Set variables in your terminal or deployment environment. Environment passwords can also use `pbkdf2$salt_hex$digest_hex` with SHA-256 and 260,000 iterations; see `tools/hash_password.py`.
-
-Sessions expire after eight hours and are stored in process memory. A restart signs everyone out. No password reset, SSO, self-service registration or tenant-isolated permissions are implemented. Both roles can read all configured franchises. Demo credentials are for local use only; network binding and the WSGI deployment entry point reject them.
+The `.env.example` file documents optional integrations and paths. Python does not load that file automatically.
 
 ## Tests
 
@@ -115,7 +106,7 @@ Sessions expire after eight hours and are stored in process memory. A restart si
 python -m unittest discover -s tests -v
 ```
 
-Tests cover score and forecast calculations, critical audit overrides, ROI, missing data, duplicate prevention, escalation, CSV transactions, authentication, roles, action evidence and export safety. See `docs/VALIDATION.md` for the actual verification results and limits.
+Tests cover score and forecast calculations, critical audit overrides, ROI, missing data, duplicate prevention, escalation, CSV transactions, open dashboard access, action evidence and export safety. See `docs/VALIDATION.md` for the actual verification results and limits.
 
 ## Project structure
 
@@ -123,7 +114,7 @@ Tests cover score and forecast calculations, critical audit overrides, ROI, miss
 FranchiseOps-AI/
   run.py                   Local launcher and one-shot agents
   worker.py                Scheduled agent and notification worker
-  wsgi.py                  Guarded deployment entry point
+  wsgi.py                  WSGI deployment entry point
   franchiseops/
     schema.sql             Database schema with foreign keys and checks
     db.py                  Persistence and activity log
@@ -132,7 +123,7 @@ FranchiseOps-AI/
     imports.py             CSV contracts and atomic upserts
     notifications.py       Opt-in email / SMS / mobile adapters
     briefing.py            Optional Ollama narrative and offline fallback
-    server.py              Authentication, API, reports and static delivery
+    server.py              Open API, reports and static delivery
     static/                HTML, CSS and JavaScript dashboard
   data/samples/            Example CSVs for all data contracts
   tests/                   Standard-library automated tests
@@ -141,7 +132,7 @@ FranchiseOps-AI/
 
 ## Important scope boundaries
 
-This is a complete runnable educational implementation of the specified modules, not a certified enterprise production system. Docker/WSGI deployment files are included, but no public deployment has been performed. Production adoption needs HTTPS, managed secrets, durable backups, identity/tenant design, operational monitoring, load testing and real provider validation. SQLite and one in-memory session worker suit a small installation; distributed deployments need shared sessions and a server database.
+This is a complete runnable educational implementation of the specified modules, not a certified enterprise production system. Docker/WSGI deployment files are included, but no public deployment has been performed. Production adoption needs HTTPS, durable backups, access controls outside this app if data must be private, operational monitoring, load testing and real provider validation. SQLite and one web worker suit a small installation; distributed deployments need a server database.
 
 Inventory forecasts assume recorded usage is representative and ignore seasonality, holidays, promotions and censored demand. Missing movement days are not imputed. Roster and campaign records are snapshots, not a historical scheduling or campaign attribution system. The engine identifies risk heuristically, not with a calibrated predictive model. Sample data is intentionally small.
 

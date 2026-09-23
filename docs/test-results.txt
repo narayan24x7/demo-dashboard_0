@@ -1,7 +1,6 @@
 test_action_requires_closure_evidence (test_system.FranchiseOpsTests.test_action_requires_closure_evidence) ... ok
 test_agent_outputs_and_safety_override (test_system.FranchiseOpsTests.test_agent_outputs_and_safety_override) ... ok
 test_all_dataset_export_import_roundtrip (test_system.FranchiseOpsTests.test_all_dataset_export_import_roundtrip) ... ok
-test_auth_and_filters (test_system.FranchiseOpsTests.test_auth_and_filters) ... ok
 test_bad_numbers_rejected (test_system.FranchiseOpsTests.test_bad_numbers_rejected) ... ok
 test_briefing_without_model (test_system.FranchiseOpsTests.test_briefing_without_model) ... ok
 test_csv_transaction_rollback (test_system.FranchiseOpsTests.test_csv_transaction_rollback) ... ok
@@ -11,20 +10,21 @@ test_export_formula_escape (test_system.FranchiseOpsTests.test_export_formula_es
 test_forecast_and_replenishment (test_system.FranchiseOpsTests.test_forecast_and_replenishment) ... ok
 test_invalid_dates_and_unknown_routes (test_system.FranchiseOpsTests.test_invalid_dates_and_unknown_routes) ... ok
 test_latest_audit_replaces_prior_finding (test_system.FranchiseOpsTests.test_latest_audit_replaces_prior_finding) ... ok
-test_login_and_dashboard_and_run_and_logout (test_system.FranchiseOpsTests.test_login_and_dashboard_and_run_and_logout) ... ok
-test_login_rate_limit (test_system.FranchiseOpsTests.test_login_rate_limit) ... ok
 test_model_adapter_parses_response (test_system.FranchiseOpsTests.test_model_adapter_parses_response) ... ok
 test_model_failure_falls_back (test_system.FranchiseOpsTests.test_model_failure_falls_back) ... ok
 test_notification_dispatch_disabled (test_system.FranchiseOpsTests.test_notification_dispatch_disabled) ... ok
 test_notifications_are_not_sent_by_agent_run (test_system.FranchiseOpsTests.test_notifications_are_not_sent_by_agent_run) ... ok
+test_public_agents_and_import (test_system.FranchiseOpsTests.test_public_agents_and_import) ... ok
+test_public_dashboard_and_filters (test_system.FranchiseOpsTests.test_public_dashboard_and_filters) ... ok
+test_public_dashboard_run_and_briefing (test_system.FranchiseOpsTests.test_public_dashboard_run_and_briefing) ... ok
+test_removed_login_routes (test_system.FranchiseOpsTests.test_removed_login_routes) ... ok
 test_roi_uses_margin (test_system.FranchiseOpsTests.test_roi_uses_margin) ... ok
 test_runs_deduplicate_and_preserve_actions (test_system.FranchiseOpsTests.test_runs_deduplicate_and_preserve_actions) ... ok
 test_seed_is_idempotent (test_system.FranchiseOpsTests.test_seed_is_idempotent) ... ok
 test_upsert_sales (test_system.FranchiseOpsTests.test_upsert_sales) ... ok
-test_viewer_cannot_mutate (test_system.FranchiseOpsTests.test_viewer_cannot_mutate) ... ok
 test_zero_spend_and_no_history (test_system.FranchiseOpsTests.test_zero_spend_and_no_history) ... ok
 
 ----------------------------------------------------------------------
-Ran 25 tests in 0.464s
+Ran 25 tests in 0.323s
 
 OK
