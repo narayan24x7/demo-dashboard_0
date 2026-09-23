@@ -30,7 +30,4 @@ def seed(db):
         for name in ['Lunch special','Local discovery']:
             spend=10000
             db.execute('INSERT INTO campaigns(outlet_id,name,spend,attributed_revenue,gross_margin,impressions,clicks,conversions,status) VALUES(?,?,?,?,?,?,?,?,?)',(oid,name,spend,18000 if oid in (2,5) else 55000,.4,22000,1200,160,'active'))
-        for category in ['Food safety','Brand standards','Service quality']:
-            critical=int(oid==5 and category=='Food safety')
-            db.execute('INSERT INTO audits(outlet_id,date,category,score,finding,critical) VALUES(?,?,?,?,?,?)',(oid,today.isoformat(),category,48 if critical else rng.randint(78,99),'Temperature log incomplete' if critical else 'Routine inspection completed',critical))
     db.commit()

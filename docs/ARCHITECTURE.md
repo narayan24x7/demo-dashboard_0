@@ -1,24 +1,29 @@
-# Architecture and requirements mapping
+# Architecture — Milestones 1–3
 
-## Request and agent flow
+## End-to-end Milestone 3 flow
 
 ```mermaid
-flowchart TD
-    UI[Browser dashboards] --> API[Open WSGI API]
-    CSV[CSV datasets] --> Validation[Schema and transaction validation]
-    Validation --> DB[(SQLite)]
-    API --> DB
-    Worker[Scheduled worker] --> Agents[Five analytics agents]
-    API --> Agents
-    DB --> Agents
-    Agents --> Engine[Franchise intelligence engine]
-    Engine --> Actions[Alerts and corrective actions]
-    Engine --> UI
-    Actions --> Outbox[Notification outbox]
-    Outbox --> Delivery[Opt-in delivery adapters]
+flowchart LR
+    CSV[Source CSVs] --> Validate[Data preparation & validation]
+    Validate --> DB[(SQLite)]
+    DB --> P[M1 Performance Agent]
+    DB --> I[M2 Inventory Agent]
+    DB --> S[M3 Staff Agent]
+    DB --> M[M3 Marketing Agent]
+    P --> O[M3 Operational Insights]
+    I --> O
+    S --> O
+    M --> O
+    O --> API[Integrated WSGI API]
+    P --> API
+    I --> API
+    S --> API
+    M --> API
+    API --> UI[M3 Dashboard]
+    API --> Tests[Integration & testing]
 ```
 
-Five agent functions return structured metrics and findings. The engine combines module scores and applies a critical-audit override. Optional LLM narration sits after analysis and has no mutation tools. The action workflow controls ownership, due dates, evidence and escalation. CSV mutations are transactional; all connections enable foreign keys and WAL.
+The Milestone 3 dashboard depends on earlier milestone outputs but the project does not add a separate composite franchise-intelligence layer.
 
 ## Storage
 
@@ -30,23 +35,18 @@ erDiagram
     INVENTORY ||--o{ MOVEMENTS : consumes
     OUTLETS ||--o{ STAFF : schedules
     OUTLETS ||--o{ CAMPAIGNS : promotes
-    OUTLETS ||--o{ AUDITS : inspects
-    OUTLETS ||--o{ ALERTS : flags
-    ALERTS ||--o{ NOTIFICATIONS : queues
 ```
 
-`runs` stores orchestration summaries. `activity` stores import, action and execution events. See `schema.sql` for exact field definitions and constraints.
+`runs` stores integration run summaries. `activity` records data imports and analytics runs.
 
-## Data time semantics
+## Metric contracts
 
-Sales have daily grain. Dashboard sales comparisons use the selected inclusive interval and its immediately preceding equal-length interval. Peer averages use recorded daily observations; coverage exposes missing dates. Inventory uses the current on-hand snapshot plus up to 28 usage observations in the last 28 calendar days. Audit uses the newest inspection per outlet/category. Staff and campaigns represent the period supplied by the operator and are not backdated by sales filters.
+**Performance (M1):** revenue, cost contribution, margin, equal-period growth, peer daily-revenue index and an explainable performance score.
 
-## Health score contracts
+**Inventory (M2):** trailing 28-day average demand, lead-time safety stock, reorder point, 7-day forecast, days cover, replenishment quantity, waste and expiry.
 
-Performance = clamp(0.4 × min(peer index,100) + 0.3 × min(margin/30×100,100) + 0.3 × min(70+growth,100)). Missing growth uses zero growth; a missing peer baseline uses a neutral index of 100. No sales records yield no performance score.
+**Workforce (M3):** worked/scheduled coverage percentage, uncovered hours, orders per worked hour and a simple coverage status.
 
-Inventory = 100 × (1 − shortage item fraction). Staff = mean capped attendance. Marketing = clamp(mean(70 + 0.3 × contribution ROI)). Audit = mean latest inspection scores. Franchise score uses weights 30/20/15/15/20%; unavailable modules are excluded and weights renormalized. Available module count is displayed. Risk High if score <60 or any critical audit; Medium below 80; Low otherwise. No available modules means No data.
+**Marketing (M3):** CTR, click-to-conversion rate, ROAS, margin-adjusted contribution ROI, contribution value and cost per conversion.
 
-## Deployment boundary
-
-Single-process WSGI with threaded serving; SQLite serializes writes. The API has no user identity or permissions. All reachable clients have full read and write access. Multiple franchises are data-supported but access is not tenant-scoped. Use one web worker for this small SQLite installation.
+**Operational Insights (M3):** deterministic rules convert weak signals from the four modules into source-labelled evidence and recommendations. No new global score is calculated.

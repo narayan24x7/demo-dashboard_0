@@ -1,23 +1,22 @@
-# API reference
-
-All API routes are public and require no credentials or tokens. Anyone who can reach the server can read, export, import and change data. The same-origin frontend uses a content security policy, frame denial and no-store response headers; these do not restrict access.
+# API reference — Milestones 1–3
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/healthz` | Process liveness |
-| GET | `/api/dashboard` | Analytics, actions, runs, schemas; query `start`, `end`, `outlet`, `region` |
-| POST | `/api/run` | Run all agents, persist findings, queue notifications |
-| POST | `/api/brief` | Network-wide default-period briefing; optional local LLM |
-| POST | `/api/import` | `{dataset,csv}` → count; atomic add/update |
-| GET | `/api/export?dataset=sales` | Entire source dataset as CSV; filters do not apply |
-| PATCH | `/api/actions` | `{id,status,owner,due_date,notes}`; statuses open/in_progress/resolved |
+| GET | `/healthz` | Liveness plus scope marker |
+| GET | `/api/dashboard` | M1–M3 analytics; optional `start`, `end`, `outlet`, `region` filters |
+| POST | `/api/run` | Run the four analytics agents through M3 and generate operational insights |
+| POST | `/api/import` | Validate and atomically upsert a supported CSV dataset |
+| GET | `/api/export?dataset=sales` | Export a supported source dataset as CSV |
 
-Invalid inputs return 400, unknown endpoints 404, and oversized bodies 413. Maximum JSON body size is 5 MB. Requests do not dispatch external notifications.
+`/api/dashboard` returns these analytics collections: `performance`, `inventory`, `staff`, `marketing`, `insights`, and `outlet_summary`, plus trend data, source schemas, data-quality counts and run history.
 
-## Example
+Supported import/export datasets are `franchises`, `outlets`, `sales`, `inventory`, `movements`, `staff`, and `campaigns`.
+
+Example:
 
 ```python
 import json, urllib.request
 with urllib.request.urlopen('http://127.0.0.1:8000/api/dashboard?outlet=1') as response:
-    print(json.load(response)['intelligence'])
+    result = json.load(response)
+    print(result['insights'])
 ```
