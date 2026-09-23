@@ -1,132 +1,101 @@
-# FranchiseOps AI — Milestone 3 Build
+# FranchiseOps AI — Full Dashboard
 
-This project is intentionally scoped to **Milestones 1, 2 and 3 only** for the Infosys Springboard project **Agentic AI for Franchise Management System with Performance Monitoring Assistance**.
+A complete non-Streamlit dashboard with a responsive HTML/CSS/JavaScript frontend and separate Python analytics agents. Uses the requested palette: #FFFFFF, #102A43, #0878B8, #16B8F3, #CCEEFF, #2B2B2B, #52687A, #B2D4E5.
 
-The application keeps the earlier milestone dependencies needed by Milestone 3 and implements the current Milestone 3 tasks exactly: **Data Preparation & Validation, Staff Agent + Workforce Analytics, Marketing Agent + Marketing Effectiveness, Operational Insights, Milestone 3 Dashboard, and Integration & Testing**.
+## Start locally
 
-## Run locally
+Requires Python 3.10 or newer. Open a terminal inside this folder:
 
-Python 3.10+ is enough for the default local application.
-
-```bash
-python run.py
+```sh
+python -m venv .venv
 ```
 
-Open **http://127.0.0.1:8000**. No login is required. On first launch the app creates synthetic demonstration data for six Gujarat outlets.
+Windows:
 
-## Exact milestone scope
+```sh
+.venv\Scripts\activate
+```
 
-| Milestone | Included functionality | Main implementation |
+macOS / Linux:
+
+```sh
+source .venv/bin/activate
+```
+
+Then:
+
+```sh
+python -m pip install -r requirements.txt
+python server.py
+```
+
+Open **http://localhost:8000**. Included saved outputs are ready to browse immediately. No Node, API key, login, or Streamlit is required. Use **Run this agent** on individual agent pages or **Run all agents** on Overview. Runs happen in the backend and report completion or failure; required upstream dependencies run first. Rerun all after source data changes to refresh downstream results.
+
+You can also run modules directly:
+
+```sh
+python pipeline.py all
+python pipeline.py inventory
+python pipeline.py operations
+```
+
+## Included modules
+
+| Milestone | Module ID | Purpose |
 |---|---|---|
-| Milestone 1 — Outlet Performance Intelligence | Sales/outlet data, outlet benchmarking, performance score, Outlet Performance Agent, performance dashboard | `franchiseops/agents.py::performance()` |
-| Milestone 2 — Inventory Intelligence & Optimization | Inventory Agent, 7-day demand forecast, stock monitoring, safety stock, reorder point, replenishment recommendation, waste/expiry metrics | `franchiseops/agents.py::inventory()` |
-| Milestone 3 — Workforce & Marketing Intelligence | Staff Agent, workforce analytics, Marketing Agent, marketing effectiveness, operational insights, integrated M3 dashboard, data validation, integration/testing | `agents.py`, `operational_insights.py`, `imports.py`, browser dashboard, `tests/` |
+| 1 | data | Source validation, cleaning and deduplication |
+| 1 | benchmark | Outlet KPI comparison and ranking |
+| 1 | score | Seven-driver performance score |
+| 1 | performance | Outlet insights and recommended actions |
+| 2 | forecast | Three-month lagged demand estimate |
+| 2 | inventory | Stock monitoring and replenishment |
+| 3 | staff | Staff health and retention |
+| 3 | workforce | Attendance, productivity and scheduling |
+| 3 | marketing | Spend efficiency and marketing agent |
+| 3 | campaigns | Campaign ROI and effectiveness |
+| 3 | operations | Recent operational risk and actions |
+| 3 | health | Cross-functional outlet health |
 
-### Milestone 3 team-task mapping
+Every view has region/outlet filtering, appropriate period filtering, charts, a searchable/sortable/paginated table, outlet detail inspection, and filtered CSV download. Full-period aggregates do not respond to the month filter; it is hidden on those pages and the period scope is labelled.
 
-| Team member | Milestone 3 task | Where it appears in this build |
-|---|---|---|
-| Bharath | Data Preparation & Validation | Strict CSV schemas, type/date/foreign-key checks, atomic upserts, data coverage page |
-| Nandini | Staff Agent + Workforce Analytics | Coverage %, attendance, roster gaps, orders/hour, workforce status |
-| Nirma | Operational Insights | Evidence-based recommendations combining M1–M3 module outputs |
-| Rajashri | Marketing Agent + Marketing Effectiveness | CTR, conversion rate, ROAS, margin-adjusted ROI, cost/conversion, effectiveness status |
-| Narayandas | Milestone 3 Dashboard | Integrated browser dashboard with filters, KPIs, tables, trends and exports |
-| Nishanth | Integration & Testing | Unified API pipeline, run history, unit tests, HTTP smoke test, JS smoke/syntax checks |
+## Source data and branch reconciliation
 
-## Analytics agents through Milestone 3
+The supplied 19 ZIPs were inventoried. `SOURCE_MANIFEST.json` records their hashes. The integrated non-UI Python modules from the m3-dashboard branch provide corrected common interfaces. Enhanced staff and marketing modules come from their dedicated m3 feature branches; operational risk uses the operational-insights branch. No former Streamlit app is included.
 
-There are **four analytics agents** in this build:
+- Main source: 750 outlets, 40 months, 30,000 cleaned outlet-month records.
+- Inventory workbook includes 120 duplicate test records; applicable loaders remove them.
+- The 96-row, 8-outlet demonstration data was excluded to avoid mixing populations.
+- Missing numeric values are imputed with column medians following the sales preparation notebook.
+- Sales preparation reads `engine/data/raw/FranchiseOps_AI_Milestone2_Inventory_Dataset.xlsx`.
+- Workforce/campaign analysis reads `engine/data/raw/FranchiseOps_AI_Milestone2_Milestone3_Combined_Dataset.xlsx`.
+- Staff retains its branch's monthly and trend CSV outputs in `engine/staff_agent/`.
+- Operational issue-label generation was repaired to report issue names, not boolean text.
+- The supplied forecasting formula uses `shift(1).rolling(3)`. Although its original column is named `Demand_Forecast_Next_Month_Units`, it is a lagged historical estimate, not a true future-period prediction. The interface labels it accordingly; initial unavailable estimates remain null. Inventory uses the separate forecast values supplied in its workbook.
+- Algorithms are deterministic, explainable rules and analytics. They do not call an LLM.
 
-1. **Performance Agent** — Milestone 1
-2. **Inventory Agent** — Milestone 2
-3. **Staff Agent** — Milestone 3
-4. **Marketing Agent** — Milestone 3
+## Structure
 
-`operational_insights.py` is the Milestone 3 recommendation layer. It consumes the four agent outputs and generates traceable recommendations by source, severity, evidence and next action. It is not counted as an additional autonomous agent.
+- `dist/` — browser frontend and exported per-agent JSON results
+- `engine/` — agent modules, original workbooks, processed CSVs and source tests
+- `pipeline.py` — module registry, dependencies, execution and JSON export
+- `server.py` — local HTTP server and asynchronous agent-run API
+- `tests/` — dashboard integration checks
 
-The **Run M3 analytics** button executes the four agents, generates operational insights, and stores a small integration run summary.
+The run API is intentionally local, bound to 127.0.0.1 by default, rejects cross-origin requests, and runs only allowlisted agent IDs. For a public production deployment, put this service behind your deployment platform's access control and TLS; the bundled server is intended for local project demonstration.
 
-## Dashboard pages
+## Hosted preview vs. full application
 
-- **Milestone 3 overview** — revenue, inventory reorder needs, workforce coverage, marketing ROI, outlet attention and current recommendations.
-- **Outlet Performance · M1** — revenue trend, benchmark, peer index, performance score and health category.
-- **Inventory Intelligence · M2** — stock level, 7-day demand, days cover, reorder point, suggested replenishment, waste and expiry.
-- **Workforce Analytics · M3** — staff coverage, attendance, roster gap and orders/hour.
-- **Marketing Effectiveness · M3** — spend, attributed revenue, CTR, conversion, ROAS, contribution, ROI and cost/conversion.
-- **Operational Insights · M3** — source-specific issues and recommendations from Performance, Inventory, Workforce and Marketing.
-- **Data Preparation & Validation · M3** — CSV contracts, import/export, joins and source table coverage.
-- **Integration & Testing · M3** — end-to-end flow and recent analytics runs.
+The hosted site serves saved results and all browsing/filtering/export interactions. It cannot execute Python. Run controls are disabled there and the interface explicitly says “Saved results · preview.” The downloaded local app runs all Python agents.
 
-## Data contracts
+For a Python-capable host, install `requirements.txt`, set `HOST=0.0.0.0` and the host-provided `PORT`, and start `python server.py`. Add production access controls before exposing mutable agent endpoints. Static hosts can serve `dist/` but cannot run agents.
 
-Only datasets required through Milestone 3 are accepted:
+## Verification
 
-- `franchises`
-- `outlets`
-- `sales`
-- `inventory`
-- `movements`
-- `staff`
-- `campaigns`
-
-Join rules:
-
-- `outlet_id` joins sales, inventory, staff and campaigns to outlets.
-- `inventory_id` joins inventory movements to inventory items.
-- CSV imports validate required headers, numeric values, dates, positive IDs, campaign funnel consistency and database foreign keys.
-- Imports are atomic: a bad row rolls back the entire upload.
-
-## Operational insight rules
-
-The insight layer does not create a new composite franchise score. It uses direct evidence such as:
-
-- low or missing outlet performance data;
-- stock below reorder point, expiry risk or elevated waste;
-- low workforce coverage or uncovered roster hours;
-- negative campaign contribution ROI or low CTR.
-
-Every generated insight includes its outlet, source module, severity, evidence and recommendation so the mentor can trace how the result was produced.
-
-## Tests
-
-Run:
-
-```bash
-python -m unittest discover -s tests -v
-python tests/http_smoke.py
+```sh
+python -m pip install pytest
+python -m pytest tests engine/tests -q
 ```
 
-Optional JavaScript checks if Node.js is installed:
+The final verification suite contains 18 tests. Data integration checks verify outlet coverage, duplicates, output schemas, finite scores, source revenue totals and operational labels. Original module tests check forecasts, inventory decisions and Milestone 3 formulas.
 
-```bash
-node --check franchiseops/static/app.js
-node tests/frontend-smoke.cjs
-```
-
-The test suite verifies the four-agent scope, workforce metrics, marketing effectiveness, inventory forecasting, operational insights, CSV validation, filters, imports/exports and the absence of post-Milestone-3 application routes.
-
-## Project structure
-
-```text
-FranchiseOps-AI/
-  run.py
-  wsgi.py
-  franchiseops/
-    agents.py                  # M1 Performance, M2 Inventory, M3 Staff + Marketing agents
-    operational_insights.py    # M3 operational recommendation layer
-    imports.py                 # M3 data preparation and validation
-    schema.sql                 # Data model required through M3
-    seed.py                    # Synthetic demo data
-    server.py                  # Dashboard/API integration
-    static/
-      index.html
-      app.js
-      style.css
-  data/samples/                # CSV examples for supported M1–M3 datasets
-  tests/                       # Integration and validation tests
-  docs/                        # API, architecture, deployment and validation notes
-```
-
-## Scope boundary
-
-This ZIP intentionally stops at Milestone 3. It does not expose unrelated later-stage modules in the dashboard, API, import schemas or agent pipeline. The code is deterministic decision support: it does not automatically change staffing, purchase inventory or spend marketing budget.
+The frontend passed JavaScript syntax checks and rendering-logic checks for all 13 views. A full browser visual check was not available in this environment.

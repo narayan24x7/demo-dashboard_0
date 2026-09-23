@@ -1,0 +1,10 @@
+// Exercise the browser app with a lightweight DOM boundary and real exported data.
+const vm=require('vm'),fs=require('fs'),path=require('path');const root=path.resolve(__dirname,'../dist');const nodes=new Map();
+function node(k){if(!nodes.has(k))nodes.set(k,{innerHTML:'',textContent:'',value:'',hidden:false,disabled:false,classList:{toggle(){}},querySelectorAll(){return []},addEventListener(){},showModal(){this.open=true},close(){this.open=false}});return nodes.get(k)}
+const context={console,setTimeout,clearTimeout,URL,Blob,Intl,location:{hash:''},document:{querySelector:node,querySelectorAll:()=>[],createElement:()=>({click(){}})},fetch:async u=>{if(u.startsWith('/api'))return {ok:false,status:404};let p=path.join(root,u);return {ok:true,json:async()=>JSON.parse(fs.readFileSync(p))}},window:{}};vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(root,'app.js'),'utf8'),context);
+(async()=>{await new Promise(r=>setTimeout(r,100));for(const page of ['overview','data','benchmark','score','performance','inventory','forecast','staff','workforce','marketing','campaigns','operations','health']){context.location.hash='#'+page;await vm.runInContext('render()',context);const html=node('#content').innerHTML;if(html.includes('Could not load')||html.includes('undefined')||html.includes('NaN'))throw Error(page+' invalid output');if(!html.includes('class="kpis"'))throw Error(page+' missing KPI content');console.log('OK',page)}await vm.runInContext("region='West';outlet='OUT0706';month='2024-03';render()",context);if(!node('#content').innerHTML.includes('class="kpis"'))throw Error('filters failed');console.log('OK filtered page and table handlers');
+context.location.hash='#data';await vm.runInContext('render()',context);
+if(vm.runInContext('tableRows.length',context)!==1)throw Error('Outlet/month filters did not narrow the dataset');
+vm.runInContext("search='no-such-record-zzzz';tableRender()",context);
+if(!node('#table-inner').innerHTML.includes('No records match'))throw Error('Empty search state missing');
+console.log('OK exact outlet/month filtering and empty search state');})().catch(e=>{console.error(e);process.exitCode=1});
